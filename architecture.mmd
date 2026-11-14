@@ -1,0 +1,57 @@
+flowchart TB
+    subgraph Users["Users"]
+        F["Farmer"]
+        B["Buyer"]
+        A["Admin"]
+    end
+
+    subgraph Client["Client - React 19 + Vite"]
+        PAGES["Pages and Components"]
+        ROUTER["React Router"]
+        STATE["Redux Toolkit<br/>auth slice"]
+        RTK["RTK Query APIs<br/>auth - crop - cart - order - chat - admin"]
+        CLERK["Clerk React<br/>sign-in and session"]
+        SOCKC["Socket.io client"]
+    end
+
+    subgraph Server["Server - Node.js + Express"]
+        MW["Middleware<br/>CORS - JSON - cookies - Clerk"]
+        BLOCK["blocked-user guard"]
+        API["REST API /api/v1<br/>user - crop - cart - order - chat - admin"]
+        CTRL["Controllers<br/>validation - role checks - business logic"]
+        MODELS["Mongoose models<br/>User - Crop - Cart - Order<br/>Conversation - Message"]
+        SOCK["Socket.io server<br/>user rooms - conversation rooms"]
+        UTILS["Utilities<br/>Cloudinary - Multer - Razorpay<br/>Nodemailer - socket"]
+    end
+
+    subgraph Services["Data and External Services"]
+        DB[("MongoDB")]
+        CLK["Clerk"]
+        CDN["Cloudinary"]
+        RZP["Razorpay"]
+        MAIL["Brevo SMTP"]
+    end
+
+    F --> PAGES
+    B --> PAGES
+    A --> PAGES
+    PAGES --> ROUTER
+    PAGES --> STATE
+    PAGES --> RTK
+    PAGES --> CLERK
+    PAGES --> SOCKC
+
+    RTK -->|"HTTPS + Bearer JWT"| MW
+    MW -->|"verify session"| CLK
+    MW --> BLOCK
+    BLOCK --> API
+    API --> CTRL
+    CTRL --> MODELS
+    MODELS --> DB
+    CTRL --> UTILS
+    UTILS --> CDN
+    UTILS --> RZP
+    UTILS --> MAIL
+
+    SOCKC <-->|"WebSocket events<br/>messages - typing - read receipts"| SOCK
+    SOCK --> MODELS
